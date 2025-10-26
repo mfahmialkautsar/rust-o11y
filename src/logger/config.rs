@@ -20,7 +20,6 @@ pub struct LoggerConfig {
     pub environment: String,
     pub timeout: Duration,
     pub credentials: Credentials,
-    pub use_global: bool,
 }
 
 impl LoggerConfig {
@@ -32,7 +31,6 @@ impl LoggerConfig {
             environment: "development".to_string(),
             timeout: DEFAULT_TIMEOUT,
             credentials: Credentials::new(),
-            use_global: false,
         }
     }
 
@@ -58,11 +56,6 @@ impl LoggerConfig {
 
     pub fn with_credentials(mut self, credentials: Credentials) -> Self {
         self.credentials = credentials;
-        self
-    }
-
-    pub fn use_global(mut self, use_global: bool) -> Self {
-        self.use_global = use_global;
         self
     }
 

@@ -2,20 +2,20 @@ mod config;
 
 pub use config::{ProfilerConfig, ProfilerError};
 
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 use anyhow::{Context, Result};
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 use pyroscope::pyroscope::{PyroscopeAgent as Agent, PyroscopeAgentRunning};
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 use pyroscope_pprofrs::{pprof_backend, PprofConfig};
 
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 pub type PyroscopeAgent = Agent<PyroscopeAgentRunning>;
 
-#[cfg(not(unix))]
+#[cfg(not(all(unix, feature = "profiler")))]
 pub type PyroscopeAgent = ();
 
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 pub fn setup(config: &ProfilerConfig) -> Result<Option<PyroscopeAgent>> {
     if !config.enabled {
         return Ok(None);
@@ -58,33 +58,23 @@ pub fn setup(config: &ProfilerConfig) -> Result<Option<PyroscopeAgent>> {
     Ok(Some(running))
 }
 
-#[cfg(not(unix))]
+#[cfg(not(all(unix, feature = "profiler")))]
 pub fn setup(_config: &ProfilerConfig) -> anyhow::Result<Option<PyroscopeAgent>> {
     Ok(None)
 }
 
-#[cfg(unix)]
-pub fn init(config: &ProfilerConfig) -> Result<Option<PyroscopeAgent>> {
-    setup(config)
-}
-
-#[cfg(not(unix))]
-pub fn init(_config: &ProfilerConfig) -> anyhow::Result<Option<PyroscopeAgent>> {
-    Ok(None)
-}
-
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 pub fn shutdown(agent: PyroscopeAgent) {
     if let Err(e) = agent.stop() {
         eprintln!("failed to shut down pyroscope agent: {e:?}");
     }
 }
 
-#[cfg(not(unix))]
+#[cfg(not(all(unix, feature = "profiler")))]
 pub fn shutdown(_agent: PyroscopeAgent) {}
 
 #[cfg(test)]
-#[cfg(unix)]
+#[cfg(all(unix, feature = "profiler"))]
 mod tests {
     use super::*;
 

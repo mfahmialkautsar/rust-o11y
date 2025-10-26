@@ -67,11 +67,7 @@ impl Telemetry {
 }
 
 fn setup_logger(config: &Config, resource: &Resource) -> Result<Option<LoggerProvider>> {
-    if config.logger.use_global {
-        logger::init(&config.logger, resource)
-    } else {
-        logger::setup(&config.logger, resource)
-    }
+    logger::setup(&config.logger, resource)
 }
 
 fn setup_tracer(config: &Config, resource: &Resource) -> Result<Option<TracerProvider>> {
@@ -83,11 +79,11 @@ fn setup_tracer(config: &Config, resource: &Resource) -> Result<Option<TracerPro
 }
 
 fn setup_meter(config: &Config, resource: &Resource) -> Result<Option<MeterProvider>> {
-    let provider = if config.meter.use_global {
-        meter::init(&config.meter, resource)?
-    } else {
-        meter::setup(&config.meter, resource)?
-    };
+    let provider = meter::setup(&config.meter, resource)?;
+
+    if let Some(ref p) = provider {
+        opentelemetry::global::set_meter_provider(p.clone());
+    }
 
     if config.meter.runtime.enabled
         && provider.is_some() {
@@ -101,11 +97,7 @@ fn setup_meter(config: &Config, resource: &Resource) -> Result<Option<MeterProvi
 }
 
 fn setup_profiler(config: &Config) -> Result<Option<PyroscopeAgent>> {
-    if config.profiler.use_global {
-        profiler::init(&config.profiler)
-    } else {
-        profiler::setup(&config.profiler)
-    }
+    profiler::setup(&config.profiler)
 }
 
 #[cfg(test)]

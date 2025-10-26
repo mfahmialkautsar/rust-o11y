@@ -29,7 +29,6 @@ fn main() -> Result<()> {
                 .with_endpoint("http://localhost:9009")
                 .with_export_interval(Duration::from_secs(10))
                 .with_runtime(RuntimeConfig::default().enabled(true))
-                .use_global(true)
         )
         .with_profiler(
             ProfilerConfig::new("example-service")

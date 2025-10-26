@@ -18,7 +18,6 @@ pub struct ProfilerConfig {
     pub tags: HashMap<String, String>,
     pub tenant_id: Option<String>,
     pub credentials: Credentials,
-    pub use_global: bool,
 }
 
 impl ProfilerConfig {
@@ -35,7 +34,6 @@ impl ProfilerConfig {
             tags,
             tenant_id: Some("anonymous".to_string()),
             credentials: Credentials::new(),
-            use_global: false,
         }
     }
 
@@ -61,11 +59,6 @@ impl ProfilerConfig {
 
     pub fn with_credentials(mut self, credentials: Credentials) -> Self {
         self.credentials = credentials;
-        self
-    }
-
-    pub fn use_global(mut self, use_global: bool) -> Self {
-        self.use_global = use_global;
         self
     }
 

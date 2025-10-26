@@ -40,10 +40,6 @@ pub fn setup(config: &LoggerConfig, resource: &Resource) -> Result<Option<Logger
     Ok(Some(provider))
 }
 
-pub fn init(config: &LoggerConfig, resource: &Resource) -> Result<Option<LoggerProvider>> {
-    setup(config, resource)
-}
-
 pub fn shutdown(provider: LoggerProvider) {
     if let Err(e) = provider.shutdown() {
         eprintln!("failed to shut down logger provider: {e:?}");
