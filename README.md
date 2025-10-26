@@ -1,6 +1,6 @@
 # o11y - Rust Observability Package
 
-Production-grade OpenTelemetry instrumentation for Rust applications with unified configuration and flexible deployment options.
+OpenTelemetry instrumentation for Rust applications with unified configuration and flexible deployment options.
 
 ## Features
 

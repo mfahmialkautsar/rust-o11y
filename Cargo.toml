@@ -1,7 +1,9 @@
 [package]
 name = "o11y"
-version = "0.1.0"
-edition = "2021"
+version = "0.0.0"
+edition = "2024"
+description = "Observability library for Rust: logging, metrics, tracing, and profiling."
+license = "GPL-3.0-only"
 
 [features]
 default = ["logger", "tracer", "meter", "profiler"]
