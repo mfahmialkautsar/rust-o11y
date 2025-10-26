@@ -33,6 +33,9 @@ pyroscope_pprofrs = { version = "0.2", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+opentelemetry-appender-tracing = "0.27"
 
 [lib]
 name = "o11y"
