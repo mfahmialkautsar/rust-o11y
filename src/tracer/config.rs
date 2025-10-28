@@ -27,7 +27,7 @@ pub struct TracerConfig {
 impl TracerConfig {
     pub fn new(service_name: impl Into<String>) -> Self {
         Self {
-            enabled: false,
+            enabled: true,
             endpoint: None,
             service_name: service_name.into(),
             sample_ratio: DEFAULT_SAMPLE_RATIO,
@@ -96,13 +96,13 @@ mod tests {
 
     #[test]
     fn test_tracer_config_disabled_passes_validation() {
-        let config = TracerConfig::new("test");
+        let config = TracerConfig::new("test").enabled(false);
         assert!(config.validate().is_ok());
     }
 
     #[test]
     fn test_tracer_config_enabled_requires_endpoint() {
-        let config = TracerConfig::new("test").enabled(true);
+        let config = TracerConfig::new("test");
         assert!(matches!(
             config.validate(),
             Err(TracerError::EndpointRequired)
@@ -114,9 +114,9 @@ mod tests {
         let mut config = TracerConfig::new("test");
         config.sample_ratio = 0.0;
         config.export_timeout = Duration::from_secs(0);
-        
+
         config.apply_defaults();
-        
+
         assert_eq!(config.sample_ratio, DEFAULT_SAMPLE_RATIO);
         assert_eq!(config.export_timeout, DEFAULT_EXPORT_TIMEOUT);
     }
@@ -124,7 +124,6 @@ mod tests {
     #[test]
     fn test_tracer_config_builder() {
         let config = TracerConfig::new("my-service")
-            .enabled(true)
             .with_endpoint("http://localhost:4317")
             .with_sample_ratio(0.5);
 

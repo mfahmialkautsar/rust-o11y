@@ -26,7 +26,7 @@ pub struct MeterConfig {
 impl MeterConfig {
     pub fn new(service_name: impl Into<String>) -> Self {
         Self {
-            enabled: false,
+            enabled: true,
             endpoint: None,
             service_name: service_name.into(),
             export_interval: DEFAULT_EXPORT_INTERVAL,
@@ -104,13 +104,13 @@ mod tests {
 
     #[test]
     fn test_meter_config_disabled_passes_validation() {
-        let config = MeterConfig::new("test");
+        let config = MeterConfig::new("test").enabled(false);
         assert!(config.validate().is_ok());
     }
 
     #[test]
     fn test_meter_config_enabled_requires_endpoint() {
-        let config = MeterConfig::new("test").enabled(true);
+        let config = MeterConfig::new("test");
         assert!(matches!(
             config.validate(),
             Err(MeterError::EndpointRequired)
@@ -130,7 +130,6 @@ mod tests {
     #[test]
     fn test_meter_config_builder() {
         let config = MeterConfig::new("my-service")
-            .enabled(true)
             .with_endpoint("http://localhost:9009")
             .with_export_interval(Duration::from_secs(30));
 
@@ -140,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn test_runtime_config() {
+    fn test_runtime_config_builder() {
         let runtime = RuntimeConfig::default();
         assert!(!runtime.enabled);
 

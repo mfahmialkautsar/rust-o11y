@@ -25,7 +25,7 @@ pub struct LoggerConfig {
 impl LoggerConfig {
     pub fn new(service_name: impl Into<String>) -> Self {
         Self {
-            enabled: false,
+            enabled: true,
             endpoint: None,
             service_name: service_name.into(),
             environment: "development".to_string(),
@@ -88,13 +88,13 @@ mod tests {
 
     #[test]
     fn test_logger_config_disabled_passes_validation() {
-        let config = LoggerConfig::new("test");
+        let config = LoggerConfig::new("test").enabled(false);
         assert!(config.validate().is_ok());
     }
 
     #[test]
     fn test_logger_config_enabled_requires_endpoint() {
-        let config = LoggerConfig::new("test").enabled(true);
+        let config = LoggerConfig::new("test");
         assert!(matches!(
             config.validate(),
             Err(LoggerError::EndpointRequired)
@@ -104,7 +104,6 @@ mod tests {
     #[test]
     fn test_logger_config_builder() {
         let config = LoggerConfig::new("my-service")
-            .enabled(true)
             .with_endpoint("http://localhost:3100")
             .with_environment("production");
 

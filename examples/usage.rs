@@ -12,27 +12,23 @@ fn main() -> Result<()> {
     let config = Config::new("example-service")
         .with_logger(
             LoggerConfig::new("example-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:3100")
                 .with_environment("development"),
         )
         .with_tracer(
             TracerConfig::new("example-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:4317")
                 .with_sample_ratio(1.0)
                 .use_global(true),
         )
         .with_meter(
             MeterConfig::new("example-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:9009")
                 .with_export_interval(Duration::from_secs(10))
                 .with_runtime(RuntimeConfig::default().enabled(true)),
         )
         .with_profiler(
             ProfilerConfig::new("example-service")
-                .enabled(true)
                 .with_server_url("http://localhost:4040")
                 .with_tag("environment", "development"),
         );
@@ -59,13 +55,11 @@ fn _example_with_auth() -> Result<()> {
     let config = Config::new("auth-service")
         .with_logger(
             LoggerConfig::new("auth-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:3100")
                 .with_credentials(creds.clone()),
         )
         .with_tracer(
             TracerConfig::new("auth-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:4317")
                 .with_credentials(creds),
         );

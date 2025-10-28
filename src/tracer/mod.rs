@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_disabled_tracer() {
-        let config = TracerConfig::new("test-service");
+        let config = TracerConfig::new("test-service").enabled(false);
         let resource = Resource::default();
 
         let result = setup(&config, &resource).unwrap();

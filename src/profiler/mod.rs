@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_disabled_profiler() {
-        let config = ProfilerConfig::new("test-service");
+        let config = ProfilerConfig::new("test-service").enabled(false);
         let result = setup(&config).unwrap();
         assert!(result.is_none());
     }

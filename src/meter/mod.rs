@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_disabled_meter() {
-        let config = MeterConfig::new("test-service");
+        let config = MeterConfig::new("test-service").enabled(false);
         let resource = Resource::default();
 
         let result = setup(&config, &resource).unwrap();
@@ -90,9 +90,7 @@ mod tests {
 
     #[test]
     fn test_endpoint_normalization() {
-        let config = MeterConfig::new("test-service")
-            .enabled(true)
-            .with_endpoint("http://localhost:9009");
+        let config = MeterConfig::new("test-service").with_endpoint("http://localhost:9009");
 
         assert!(config.endpoint.unwrap().contains("9009"));
     }

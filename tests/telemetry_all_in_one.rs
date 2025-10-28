@@ -30,22 +30,18 @@ async fn telemetry_pushes_to_backends() -> Result<()> {
 
     let mut config = Config::new(&case.service_name)
         .with_logger(
-            LoggerConfig::new(&case.service_name)
-                .enabled(true)
-                .with_endpoint(endpoints.logs_otel_url.clone()),
+            LoggerConfig::new(&case.service_name).with_endpoint(endpoints.logs_otel_url.clone()),
         )
         .with_tracer(
             TracerConfig::new(&case.service_name)
-                .enabled(true)
                 .with_endpoint(endpoints.traces_otel_endpoint.clone())
                 .use_global(true),
         )
         .with_meter(
             MeterConfig::new(&case.service_name)
-                .enabled(true)
                 .with_endpoint(endpoints.metrics_otel_url.clone())
                 .with_export_interval(Duration::from_millis(200))
-                .with_runtime(RuntimeConfig::default().enabled(false))
+                .with_runtime(RuntimeConfig::default())
                 .use_global(true),
         );
 
@@ -53,7 +49,6 @@ async fn telemetry_pushes_to_backends() -> Result<()> {
     {
         config = config.with_profiler(
             ProfilerConfig::new(&case.service_name)
-                .enabled(true)
                 .with_server_url(endpoints.pyroscope_url.clone())
                 .with_tag("test_case", case.test_case.clone())
                 .with_tenant_id(endpoints.pyroscope_tenant.clone()),

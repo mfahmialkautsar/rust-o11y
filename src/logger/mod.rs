@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_disabled_logger() {
-        let config = LoggerConfig::new("test-service");
+        let config = LoggerConfig::new("test-service").enabled(false);
         let resource = Resource::default();
 
         let result = setup(&config, &resource).unwrap();

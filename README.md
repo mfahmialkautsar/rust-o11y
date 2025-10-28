@@ -52,17 +52,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::new("my-service")
         .with_logger(
             LoggerConfig::new("my-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:3100/otlp")
         )
         .with_tracer(
             TracerConfig::new("my-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:4317")
         )
         .with_meter(
             MeterConfig::new("my-service")
-                .enabled(true)
                 .with_endpoint("http://localhost:9009/otlp")
         );
 
@@ -70,11 +67,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Your application code here
     
-    telemetry.shutdown()?;
+    let telemetry = Telemetry::new(config)?;
     Ok(())
 }
 ```
 
+This all-in-one bootstrap is exercised in `tests/telemetry_all_in_one.rs`. Run `cargo test --test telemetry_all_in_one` to validate your environment end-to-end before deploying.
+    telemetry.shutdown();
+    Ok(())
 ### Standalone Component Setup
 
 ```rust
@@ -89,7 +89,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build();
 
     let logger_config = LoggerConfig::new("my-service")
-        .enabled(true)
         .with_endpoint("http://localhost:3100/otlp");
 
     let logger_provider = logger::setup(&logger_config, &resource)?;
@@ -101,6 +100,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+Each standalone pattern is mirrored in `tests/telemetry_standalone.rs`, giving you an executable spec for logs, traces, metrics, and profiles. Execute `cargo test --test telemetry_standalone` to confirm exports reach your configured backends.
+
 ## Configuration
 
 ### Logger Configuration
@@ -109,7 +110,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 use o11y::logger::LoggerConfig;
 
 let logger_cfg = LoggerConfig::new("my-service")
-    .enabled(true)
     .with_endpoint("http://localhost:3100/otlp")
     .with_environment("production");
 ```
@@ -120,11 +120,12 @@ let logger_cfg = LoggerConfig::new("my-service")
 
 ```rust
 use o11y::tracer::TracerConfig;
-use std::time::Duration;
+    let logger_provider = logger::setup(&logger_config, &resource)?;
 
 let tracer_cfg = TracerConfig::new("my-service")
-    .enabled(true)
-    .with_endpoint("http://localhost:4317")
+    if let Some(provider) = logger_provider {
+        logger::shutdown(provider);
+    }
     .with_sample_ratio(0.1)  // Sample 10% of traces
     .with_export_timeout(Duration::from_secs(30));
 ```
@@ -138,10 +139,9 @@ use o11y::meter::{MeterConfig, RuntimeConfig};
 use std::time::Duration;
 
 let meter_cfg = MeterConfig::new("my-service")
-    .enabled(true)
     .with_endpoint("http://localhost:9009/otlp")
     .with_export_interval(Duration::from_secs(60))
-    .with_runtime(RuntimeConfig::default().enabled(true));
+    .with_runtime(RuntimeConfig::default());
 ```
 
 **Note**: Meter endpoint should include `/otlp` path for Grafana Mimir OTLP endpoint (default port 9009).
@@ -154,7 +154,6 @@ use std::time::Duration;
 
 #[cfg(unix)]
 let profiler_cfg = ProfilerConfig::new("my-service")
-    .enabled(true)
     .with_endpoint("http://localhost:4040")
     .with_sample_rate(100)  // Hz
     .with_upload_interval(Duration::from_secs(15));
@@ -202,7 +201,6 @@ use o11y::auth::Credentials;
 let creds = Credentials::basic_auth("username", "password");
 
 let logger_cfg = LoggerConfig::new("my-service")
-    .enabled(true)
     .with_endpoint("http://localhost:3100/otlp")
     .with_credentials(creds);
 ```
@@ -263,8 +261,8 @@ match Telemetry::setup(&config) {
 # Unit tests
 cargo test --lib
 
-# All tests
-cargo test
+# Integration coverage for the README examples
+cargo test --test telemetry_all_in_one --test telemetry_standalone
 
 # With specific features
 cargo test --no-default-features --features logger,tracer

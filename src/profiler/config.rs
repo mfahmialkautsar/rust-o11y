@@ -28,7 +28,7 @@ impl ProfilerConfig {
         tags.insert("service_name".to_string(), service_name.clone());
 
         Self {
-            enabled: false,
+            enabled: true,
             server_url: None,
             service_name,
             tags,
@@ -66,7 +66,7 @@ impl ProfilerConfig {
         if self.tenant_id.is_none() {
             self.tenant_id = Some("anonymous".to_string());
         }
-        
+
         if !self.tags.contains_key("service") {
             self.tags
                 .insert("service".to_string(), self.service_name.clone());
@@ -97,13 +97,13 @@ mod tests {
 
     #[test]
     fn test_profiler_config_disabled_passes_validation() {
-        let config = ProfilerConfig::new("test");
+        let config = ProfilerConfig::new("test").enabled(false);
         assert!(config.validate().is_ok());
     }
 
     #[test]
     fn test_profiler_config_enabled_requires_server_url() {
-        let config = ProfilerConfig::new("test").enabled(true);
+        let config = ProfilerConfig::new("test");
         assert!(matches!(
             config.validate(),
             Err(ProfilerError::ServerUrlRequired)
@@ -120,7 +120,6 @@ mod tests {
     #[test]
     fn test_profiler_config_builder() {
         let config = ProfilerConfig::new("my-service")
-            .enabled(true)
             .with_server_url("http://localhost:4040")
             .with_tag("environment", "production")
             .with_tenant_id("my-tenant");

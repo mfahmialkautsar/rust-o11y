@@ -197,10 +197,18 @@ pub fn current_trace_context() -> Option<TraceContextInfo> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        logger::LoggerConfig, meter::MeterConfig, profiler::ProfilerConfig, tracer::TracerConfig,
+    };
 
     #[test]
     fn test_telemetry_all_disabled() {
-        let config = Config::new("test-service");
+        let service = "test-service";
+        let config = Config::new(service)
+            .with_logger(LoggerConfig::new(service).enabled(false))
+            .with_tracer(TracerConfig::new(service).enabled(false))
+            .with_meter(MeterConfig::new(service).enabled(false))
+            .with_profiler(ProfilerConfig::new(service).enabled(false));
         let tele = Telemetry::new(config).unwrap();
 
         assert!(!tele.has_logger());

@@ -33,8 +33,8 @@ async fn standalone_logger_pushes_to_loki() -> Result<()> {
 
     let resource = ResourceConfig::new(&case.service_name).build();
 
-    let logger_config = LoggerConfig::new(&case.service_name)
-        .with_endpoint(endpoints.logs_otel_url.clone());
+    let logger_config =
+        LoggerConfig::new(&case.service_name).with_endpoint(endpoints.logs_otel_url.clone());
 
     let provider = logger::setup(&logger_config, &resource)?
         .ok_or_else(|| anyhow!("logger provider not initialised"))?;
