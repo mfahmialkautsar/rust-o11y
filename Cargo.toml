@@ -1,9 +1,20 @@
 [package]
 name = "o11y"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2024"
+rust-version = "1.85"
 description = "Observability library for Rust: logging, metrics, tracing, and profiling."
 license = "GPL-3.0-only"
+readme = "README.md"
+repository = "https://github.com/mfahmialkautsar/rust-o11y"
+homepage = "https://github.com/mfahmialkautsar/rust-o11y"
+documentation = "https://docs.rs/o11y"
+keywords = ["observability", "logging", "metrics", "tracing", "profiling"]
+categories = ["development-tools::debugging", "development-tools::profiling"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["logger", "tracer", "meter", "profiler"]
@@ -14,30 +25,25 @@ profiler = ["dep:pyroscope", "dep:pyroscope_pprofrs"]
 
 [dependencies]
 anyhow = "1.0"
-thiserror = "2.0"
-opentelemetry = "0.27"
-opentelemetry_sdk = { version = "0.27", features = ["rt-tokio", "logs", "trace"] }
-opentelemetry-otlp = { version = "0.27", features = ["http-proto", "reqwest-client"] }
-opentelemetry-semantic-conventions = { version = "0.27", features = ["semconv_experimental"] }
-tokio = { version = "1", features = ["full"] }
-reqwest = { version = "0.12", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 base64 = "0.22"
+opentelemetry = "0.27"
+opentelemetry-appender-tracing = "0.27"
+opentelemetry-semantic-conventions = { version = "0.27", features = ["semconv_experimental"] }
+opentelemetry-otlp = { version = "0.27", features = ["http-proto", "reqwest-client"] }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio", "logs", "trace"] }
+thiserror = "2.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "registry"] }
 tracing-opentelemetry = "0.28"
-opentelemetry-appender-tracing = "0.27"
 
 [target.'cfg(unix)'.dependencies]
 pyroscope = { version = "0.5", optional = true }
 pyroscope_pprofrs = { version = "0.2", optional = true }
 
 [dev-dependencies]
-tokio-test = "0.4"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
-opentelemetry-appender-tracing = "0.27"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = "1.0"
 
 [lib]
 name = "o11y"

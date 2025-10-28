@@ -1,0 +1,35 @@
+name: Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  tarpaulin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin --locked
+      - name: Start MLTP Stack
+        uses: ./.github/actions/start-mltp-stack
+      - name: Run tarpaulin
+        run: cargo tarpaulin --all-features --workspace --tests --out Lcov --output-dir target/coverage
+      - name: Upload to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          slug: mfahmialkautsar/rust-o11y
+          files: ./target/coverage/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Stop MLTP Stack
+        if: always()
+        uses: ./.github/actions/stop-mltp-stack

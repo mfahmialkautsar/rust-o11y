@@ -96,12 +96,10 @@ fn setup_meter(config: &Config, resource: &Resource) -> Result<Option<MeterProvi
         meter::setup(&config.meter, resource)?
     };
 
-    if config.meter.runtime.enabled && config.meter.use_global {
-        if provider.is_some() {
-            let meter_name = config.meter.service_name.clone();
-            if let Err(err) = meter::register_runtime_metrics(meter_name) {
-                eprintln!("failed to register runtime metrics: {err}");
-            }
+    if config.meter.runtime.enabled && config.meter.use_global && provider.is_some() {
+        let meter_name = config.meter.service_name.clone();
+        if let Err(err) = meter::register_runtime_metrics(meter_name) {
+            eprintln!("failed to register runtime metrics: {err}");
         }
     }
 
@@ -127,7 +125,7 @@ fn install_tracing_subscriber(
         .with_target(true)
         .with_line_number(true)
         .with_file(true)
-        .with_timer(tracing_subscriber::fmt::time::SystemTime::default());
+        .with_timer(tracing_subscriber::fmt::time::SystemTime);
 
     let base = Registry::default().with(env_filter).with(fmt_layer);
 

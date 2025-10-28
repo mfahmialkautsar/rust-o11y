@@ -1,0 +1,56 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to publish the crate to crates.io'
+        required: true
+        default: 'no'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure required workflows succeeded
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflows = ['ci.yml', 'coverage.yml', 'docs.yml'];
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            for (const workflow of workflows) {
+              const { data } = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflow,
+                head_sha: context.sha,
+                per_page: 1,
+              });
+
+              const run = data.workflow_runs.find((item) => item.head_sha === context.sha);
+              if (!run) {
+                core.setFailed(`Workflow ${workflow} has not completed for commit ${context.sha}.`);
+                return;
+              }
+              if (run.conclusion !== 'success') {
+                core.setFailed(`Workflow ${workflow} finished with conclusion "${run.conclusion}".`);
+                return;
+              }
+            }
+
+  publish:
+    needs: verify
+    if: ${{ inputs.confirm == 'yes' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.85.0
+      - name: Publish crate
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo publish --all-features
