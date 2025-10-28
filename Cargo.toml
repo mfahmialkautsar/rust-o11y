@@ -2,7 +2,6 @@
 name = "o11y"
 version = "0.0.1"
 edition = "2024"
-rust-version = "1.85"
 description = "Observability library for Rust: logging, metrics, tracing, and profiling."
 license = "GPL-3.0-only"
 readme = "README.md"

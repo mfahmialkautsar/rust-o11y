@@ -27,7 +27,7 @@ jobs:
         with:
           slug: mfahmialkautsar/rust-o11y
           files: ./target/coverage/lcov.info
-          fail_ci_if_error: false
+          fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Stop MLTP Stack

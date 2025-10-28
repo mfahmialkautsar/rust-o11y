@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/mfahmialkautsar/rust-o11y/graph/badge.svg)](https://codecov.io/gh/mfahmialkautsar/rust-o11y)
 [![Crates.io](https://img.shields.io/crates/v/o11y.svg)](https://crates.io/crates/o11y)
 [![Docs.rs](https://img.shields.io/docsrs/o11y)](https://docs.rs/o11y)
-![MSRV](https://img.shields.io/badge/rustc-1.85%2B-orange.svg)
+![MSRV](https://img.shields.io/badge/rustc-2024%20edition-orange.svg)
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
 Observability building blocks for Rust services: unified configuration for logging, tracing, metrics, and continuous profiling on top of OpenTelemetry.
@@ -24,7 +24,7 @@ Observability building blocks for Rust services: unified configuration for loggi
 cargo add o11y --features="logger tracer meter profiler"
 ```
 
-The crate targets Rust 1.85 or newer (2024 edition). Tokio is required when using async components:
+The crate targets the 2024 edition. Tokio is required when using async components:
 
 ```toml
 [dependencies]
