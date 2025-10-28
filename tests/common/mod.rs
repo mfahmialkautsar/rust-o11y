@@ -1,13 +1,13 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
+use opentelemetry::KeyValue;
 use opentelemetry::logs::{AnyValue, LogRecord as _, Logger as _, LoggerProvider as _, Severity};
 use opentelemetry::trace::SpanContext;
-use opentelemetry::KeyValue;
 use opentelemetry_sdk::logs::LogRecord;
 use reqwest::{Client, StatusCode};
 use serde_json::Value;
-use tokio::time::{sleep, Instant};
+use tokio::time::{Instant, sleep};
 
 use o11y::logger::LoggerProvider;
 
@@ -235,7 +235,10 @@ pub async fn wait_for_mimir(
     trace_id: &str,
     span_id: &str,
 ) -> Result<()> {
-    let mut url = reqwest::Url::parse(&format!("{}/prometheus/api/v1/query", base.trim_end_matches('/')))?;
+    let mut url = reqwest::Url::parse(&format!(
+        "{}/prometheus/api/v1/query",
+        base.trim_end_matches('/')
+    ))?;
     let query = format!(
         "{}{{test_case=\"{}\",trace_id=\"{}\",span_id=\"{}\"}}",
         metric_name, test_case, trace_id, span_id

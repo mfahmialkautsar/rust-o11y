@@ -1,11 +1,18 @@
 use anyhow::Result;
+use opentelemetry::KeyValue;
+use opentelemetry::trace::{TraceContextExt, TracerProvider as _};
 use opentelemetry_sdk::resource::Resource;
+use tracing::{Dispatch, Span, dispatcher};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
+use tracing_subscriber::{EnvFilter, Registry, layer::SubscriberExt};
 
 use crate::config::Config;
 use crate::logger::{self, LoggerProvider};
 use crate::meter::{self, MeterProvider};
 use crate::profiler::{self, PyroscopeAgent};
 use crate::tracer::{self, TracerProvider};
+
+const DEFAULT_LOG_FILTER_SUFFIX: &str = "otel::tracing=trace,axum_tracing_opentelemetry=trace";
 
 pub struct Telemetry {
     pub logger: Option<LoggerProvider>,
@@ -25,6 +32,10 @@ impl Telemetry {
         let tracer = setup_tracer(&config, &resource)?;
         let meter = setup_meter(&config, &resource)?;
         let profiler = setup_profiler(&config)?;
+
+        if let Err(err) = install_tracing_subscriber(&config, tracer.as_ref(), logger.as_ref()) {
+            eprintln!("failed to install tracing subscriber: {err}");
+        }
 
         Ok(Self {
             logger,
@@ -79,25 +90,108 @@ fn setup_tracer(config: &Config, resource: &Resource) -> Result<Option<TracerPro
 }
 
 fn setup_meter(config: &Config, resource: &Resource) -> Result<Option<MeterProvider>> {
-    let provider = meter::setup(&config.meter, resource)?;
+    let provider = if config.meter.use_global {
+        meter::init(&config.meter, resource)?
+    } else {
+        meter::setup(&config.meter, resource)?
+    };
 
-    if let Some(ref p) = provider {
-        opentelemetry::global::set_meter_provider(p.clone());
-    }
-
-    if config.meter.runtime.enabled
-        && provider.is_some() {
+    if config.meter.runtime.enabled && config.meter.use_global {
+        if provider.is_some() {
             let meter_name = config.meter.service_name.clone();
-            if let Err(e) = meter::register_runtime_metrics(meter_name) {
-                eprintln!("failed to register runtime metrics: {e}");
+            if let Err(err) = meter::register_runtime_metrics(meter_name) {
+                eprintln!("failed to register runtime metrics: {err}");
             }
         }
+    }
 
     Ok(provider)
 }
 
 fn setup_profiler(config: &Config) -> Result<Option<PyroscopeAgent>> {
     profiler::setup(&config.profiler)
+}
+
+fn install_tracing_subscriber(
+    config: &Config,
+    tracer: Option<&TracerProvider>,
+    logger: Option<&LoggerProvider>,
+) -> Result<(), tracing::subscriber::SetGlobalDefaultError> {
+    if dispatcher::has_been_set() {
+        return Ok(());
+    }
+
+    let fallback = fallback_log_filter(&config.resource.service_name);
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(fallback));
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_target(true)
+        .with_line_number(true)
+        .with_file(true)
+        .with_timer(tracing_subscriber::fmt::time::SystemTime::default());
+
+    let base = Registry::default().with(env_filter).with(fmt_layer);
+
+    let dispatch = match (tracer, logger) {
+        (Some(tp), Some(lp)) => {
+            let tracer = tp.tracer(config.tracer.service_name.clone());
+            let log_layer =
+                opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(lp);
+            Dispatch::new(
+                base.with(tracing_opentelemetry::layer().with_tracer(tracer))
+                    .with(log_layer),
+            )
+        }
+        (Some(tp), None) => {
+            let tracer = tp.tracer(config.tracer.service_name.clone());
+            Dispatch::new(base.with(tracing_opentelemetry::layer().with_tracer(tracer)))
+        }
+        (None, Some(lp)) => {
+            let log_layer =
+                opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(lp);
+            Dispatch::new(base.with(log_layer))
+        }
+        (None, None) => Dispatch::new(base),
+    };
+
+    dispatcher::set_global_default(dispatch)
+}
+
+fn fallback_log_filter(service_name: &str) -> String {
+    format!("info,{service_name}=debug,{DEFAULT_LOG_FILTER_SUFFIX}")
+}
+
+#[derive(Debug, Clone)]
+pub struct TraceContextInfo {
+    pub trace_id: String,
+    pub span_id: String,
+    pub sampled: bool,
+}
+
+impl TraceContextInfo {
+    pub fn into_attributes(self) -> [KeyValue; 3] {
+        [
+            KeyValue::new("trace_id", self.trace_id),
+            KeyValue::new("span_id", self.span_id),
+            KeyValue::new("trace_sampled", if self.sampled { "true" } else { "false" }),
+        ]
+    }
+}
+
+pub fn current_trace_context() -> Option<TraceContextInfo> {
+    let span = Span::current();
+    let context = span.context();
+    let span_ref = context.span();
+    let span_context = span_ref.span_context();
+
+    if !span_context.is_valid() {
+        return None;
+    }
+
+    Some(TraceContextInfo {
+        trace_id: span_context.trace_id().to_string(),
+        span_id: span_context.span_id().to_string(),
+        sampled: span_context.trace_flags().is_sampled(),
+    })
 }
 
 #[cfg(test)]

@@ -3,11 +3,11 @@ mod config;
 pub use config::{LoggerConfig, LoggerError};
 
 use anyhow::Result;
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     logs::{BatchLogProcessor, LoggerProvider as SdkLoggerProvider},
     resource::Resource,
 };
-use opentelemetry_otlp::WithExportConfig;
 
 pub type LoggerProvider = SdkLoggerProvider;
 
@@ -16,7 +16,9 @@ pub fn setup(config: &LoggerConfig, resource: &Resource) -> Result<Option<Logger
         return Ok(None);
     }
 
-    let endpoint = config.endpoint.as_ref()
+    let endpoint = config
+        .endpoint
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("logger endpoint is required when enabled"))?;
 
     let normalized_endpoint = if endpoint.ends_with("/v1/logs") {
@@ -54,7 +56,7 @@ mod tests {
     fn test_disabled_logger() {
         let config = LoggerConfig::new("test-service");
         let resource = Resource::default();
-        
+
         let result = setup(&config, &resource).unwrap();
         assert!(result.is_none());
     }
@@ -64,7 +66,7 @@ mod tests {
         let mut config = LoggerConfig::new("test-service");
         config.enabled = true;
         let resource = Resource::default();
-        
+
         let result = setup(&config, &resource);
         assert!(result.is_err());
     }

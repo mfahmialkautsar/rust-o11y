@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 #[cfg(all(unix, feature = "profiler"))]
 use pyroscope::pyroscope::{PyroscopeAgent as Agent, PyroscopeAgentRunning};
 #[cfg(all(unix, feature = "profiler"))]
-use pyroscope_pprofrs::{pprof_backend, PprofConfig};
+use pyroscope_pprofrs::{PprofConfig, pprof_backend};
 
 #[cfg(all(unix, feature = "profiler"))]
 pub type PyroscopeAgent = Agent<PyroscopeAgentRunning>;
@@ -51,9 +51,7 @@ pub fn setup(config: &ProfilerConfig) -> Result<Option<PyroscopeAgent>> {
         .build()
         .context("failed to configure pyroscope agent")?;
 
-    let running = agent
-        .start()
-        .context("failed to start pyroscope agent")?;
+    let running = agent.start().context("failed to start pyroscope agent")?;
 
     Ok(Some(running))
 }

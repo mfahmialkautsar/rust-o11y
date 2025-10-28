@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
+use opentelemetry::KeyValue;
 use opentelemetry::global;
 use opentelemetry::trace::{Span, Tracer};
-use opentelemetry::KeyValue;
 use reqwest::Client;
 use tokio::time::sleep;
 
@@ -16,7 +16,10 @@ use o11y::{Config, Telemetry};
 #[path = "common/mod.rs"]
 mod common;
 
-use common::{emit_log, record_metric, wait_for_loki, wait_for_mimir, wait_for_tempo, ObservationCase, Targets};
+use common::{
+    ObservationCase, Targets, emit_log, record_metric, wait_for_loki, wait_for_mimir,
+    wait_for_tempo,
+};
 #[cfg(all(unix, feature = "profiler"))]
 use common::{generate_cpu_load, wait_for_pyroscope};
 
@@ -76,8 +79,19 @@ async fn telemetry_pushes_to_backends() -> Result<()> {
         .as_ref()
         .ok_or_else(|| anyhow!("logger provider not initialised"))?;
 
-    emit_log(logger_provider, &span_context, &case.log_message, &case.test_case)?;
-    record_metric(&case.metric_name, &case.test_case, &trace_id_str, &span_id_str).await?;
+    emit_log(
+        logger_provider,
+        &span_context,
+        &case.log_message,
+        &case.test_case,
+    )?;
+    record_metric(
+        &case.metric_name,
+        &case.test_case,
+        &trace_id_str,
+        &span_id_str,
+    )
+    .await?;
 
     #[cfg(all(unix, feature = "profiler"))]
     if expect_profiler {

@@ -6,8 +6,8 @@ pub use runtime::register_runtime_metrics;
 
 use anyhow::Result;
 use opentelemetry::global;
-use opentelemetry_sdk::{metrics::SdkMeterProvider, resource::Resource};
 use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::{metrics::SdkMeterProvider, resource::Resource};
 
 pub type MeterProvider = SdkMeterProvider;
 
@@ -33,7 +33,11 @@ pub fn setup(config: &MeterConfig, resource: &Resource) -> Result<Option<MeterPr
 
     let exporter = exporter_builder.build()?;
 
-    let reader = opentelemetry_sdk::metrics::PeriodicReader::builder(exporter, opentelemetry_sdk::runtime::Tokio).build();
+    let reader = opentelemetry_sdk::metrics::PeriodicReader::builder(
+        exporter,
+        opentelemetry_sdk::runtime::Tokio,
+    )
+    .build();
 
     let provider = SdkMeterProvider::builder()
         .with_resource(resource.clone())

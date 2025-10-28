@@ -1,10 +1,10 @@
 use anyhow::Result;
-use o11y::{Config, Telemetry};
+use o11y::Credentials;
 use o11y::logger::LoggerConfig;
 use o11y::meter::{MeterConfig, RuntimeConfig};
 use o11y::profiler::ProfilerConfig;
 use o11y::tracer::TracerConfig;
-use o11y::Credentials;
+use o11y::{Config, Telemetry};
 use std::time::Duration;
 
 fn main() -> Result<()> {
@@ -14,27 +14,27 @@ fn main() -> Result<()> {
             LoggerConfig::new("example-service")
                 .enabled(true)
                 .with_endpoint("http://localhost:3100")
-                .with_environment("development")
+                .with_environment("development"),
         )
         .with_tracer(
             TracerConfig::new("example-service")
                 .enabled(true)
                 .with_endpoint("http://localhost:4317")
                 .with_sample_ratio(1.0)
-                .use_global(true)
+                .use_global(true),
         )
         .with_meter(
             MeterConfig::new("example-service")
                 .enabled(true)
                 .with_endpoint("http://localhost:9009")
                 .with_export_interval(Duration::from_secs(10))
-                .with_runtime(RuntimeConfig::default().enabled(true))
+                .with_runtime(RuntimeConfig::default().enabled(true)),
         )
         .with_profiler(
             ProfilerConfig::new("example-service")
                 .enabled(true)
                 .with_server_url("http://localhost:4040")
-                .with_tag("environment", "development")
+                .with_tag("environment", "development"),
         );
 
     let tele = Telemetry::new(config)?;
@@ -54,21 +54,20 @@ fn main() -> Result<()> {
 
 // Example 2: With authentication
 fn _example_with_auth() -> Result<()> {
-    let creds = Credentials::new()
-        .with_bearer("my-secret-token");
+    let creds = Credentials::new().with_bearer("my-secret-token");
 
     let config = Config::new("auth-service")
         .with_logger(
             LoggerConfig::new("auth-service")
                 .enabled(true)
                 .with_endpoint("http://localhost:3100")
-                .with_credentials(creds.clone())
+                .with_credentials(creds.clone()),
         )
         .with_tracer(
             TracerConfig::new("auth-service")
                 .enabled(true)
                 .with_endpoint("http://localhost:4317")
-                .with_credentials(creds)
+                .with_credentials(creds),
         );
 
     let tele = Telemetry::new(config)?;

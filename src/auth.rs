@@ -116,10 +116,10 @@ mod tests {
     fn test_basic_auth() {
         let creds = Credentials::new().with_basic("user", "pass");
         let headers = creds.header_map();
-        
+
         let auth = headers.get("Authorization").unwrap();
         assert!(auth.starts_with("Basic "));
-        
+
         let (user, pass) = creds.basic_auth().unwrap();
         assert_eq!(user, "user");
         assert_eq!(pass, "pass");
@@ -129,11 +129,8 @@ mod tests {
     fn test_bearer_token() {
         let creds = Credentials::new().with_bearer("secret-token");
         let headers = creds.header_map();
-        
-        assert_eq!(
-            headers.get("Authorization").unwrap(),
-            "Bearer secret-token"
-        );
+
+        assert_eq!(headers.get("Authorization").unwrap(), "Bearer secret-token");
         assert_eq!(creds.bearer().unwrap(), "secret-token");
     }
 
@@ -141,7 +138,7 @@ mod tests {
     fn test_api_key_default_header() {
         let creds = Credentials::new().with_api_key("my-api-key");
         let headers = creds.header_map();
-        
+
         assert_eq!(headers.get("X-API-Key").unwrap(), "my-api-key");
     }
 
@@ -151,7 +148,7 @@ mod tests {
             .with_api_key("my-api-key")
             .with_api_key_header("X-Custom-Key");
         let headers = creds.header_map();
-        
+
         assert_eq!(headers.get("X-Custom-Key").unwrap(), "my-api-key");
     }
 
@@ -161,7 +158,7 @@ mod tests {
             .with_bearer("token")
             .with_basic("user", "pass");
         let headers = creds.header_map();
-        
+
         let auth = headers.get("Authorization").unwrap();
         assert!(auth.starts_with("Basic "));
     }
@@ -171,13 +168,13 @@ mod tests {
         let mut extra = HashMap::new();
         extra.insert("Authorization".to_string(), "ignored".to_string());
         extra.insert("X-Custom".to_string(), "value".to_string());
-        
+
         let creds = Credentials {
             headers: extra,
             bearer_token: Some("token".to_string()),
             ..Default::default()
         };
-        
+
         let headers = creds.header_map();
         assert_eq!(headers.get("Authorization").unwrap(), "Bearer token");
         assert_eq!(headers.get("X-Custom").unwrap(), "value");

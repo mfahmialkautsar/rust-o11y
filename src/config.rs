@@ -1,14 +1,14 @@
-use opentelemetry_sdk::resource::{Resource, ResourceDetector};
 use opentelemetry::KeyValue;
+use opentelemetry_sdk::resource::{Resource, ResourceDetector};
 use opentelemetry_semantic_conventions::resource;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 
 use crate::logger::LoggerConfig;
-use crate::tracer::TracerConfig;
 use crate::meter::MeterConfig;
 use crate::profiler::ProfilerConfig;
+use crate::tracer::TracerConfig;
 
 const DEFAULT_SERVICE_VERSION: &str = "0.1.0";
 const DEFAULT_SERVICE_NAMESPACE: &str = "default";
@@ -251,9 +251,11 @@ mod tests {
             .with_attribute("custom.key", "custom.value");
 
         let resource = resource_cfg.build();
-        
-        assert!(resource.iter().any(|(k, v)| {
-            k.as_str() == "service.name" && v.as_str() == "my-service"
-        }));
+
+        assert!(
+            resource
+                .iter()
+                .any(|(k, v)| { k.as_str() == "service.name" && v.as_str() == "my-service" })
+        );
     }
 }

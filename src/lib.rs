@@ -8,9 +8,9 @@ pub mod tracer;
 
 pub use auth::Credentials;
 pub use config::{Config, ResourceConfig};
-pub use telemetry::Telemetry;
+pub use telemetry::{Telemetry, TraceContextInfo, current_trace_context};
 
 pub use logger::LoggerProvider;
-pub use tracer::TracerProvider;
 pub use meter::MeterProvider;
 pub use profiler::PyroscopeAgent;
+pub use tracer::TracerProvider;

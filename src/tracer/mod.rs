@@ -4,12 +4,12 @@ pub use config::{TracerConfig, TracerError};
 
 use anyhow::Result;
 use opentelemetry::global;
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     propagation::TraceContextPropagator,
     resource::Resource,
     trace::{RandomIdGenerator, Sampler, TracerProvider as SdkTracerProvider},
 };
-use opentelemetry_otlp::WithExportConfig;
 
 pub type TracerProvider = SdkTracerProvider;
 
@@ -18,7 +18,9 @@ pub fn setup(config: &TracerConfig, resource: &Resource) -> Result<Option<Tracer
         return Ok(None);
     }
 
-    let endpoint = config.endpoint.as_ref()
+    let endpoint = config
+        .endpoint
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("tracer endpoint is required when enabled"))?;
 
     global::set_text_map_propagator(TraceContextPropagator::new());
@@ -43,13 +45,13 @@ pub fn setup(config: &TracerConfig, resource: &Resource) -> Result<Option<Tracer
 
 pub fn init(config: &TracerConfig, resource: &Resource) -> Result<Option<TracerProvider>> {
     let provider = setup(config, resource)?;
-    
+
     if config.use_global {
         if let Some(ref p) = provider {
             global::set_tracer_provider(p.clone());
         }
     }
-    
+
     Ok(provider)
 }
 
@@ -77,7 +79,7 @@ mod tests {
     fn test_disabled_tracer() {
         let config = TracerConfig::new("test-service");
         let resource = Resource::default();
-        
+
         let result = setup(&config, &resource).unwrap();
         assert!(result.is_none());
     }
@@ -88,7 +90,7 @@ mod tests {
         assert!(matches!(sampler_from_ratio(0.0), Sampler::AlwaysOff));
         assert!(matches!(sampler_from_ratio(1.0), Sampler::AlwaysOn));
         assert!(matches!(sampler_from_ratio(2.0), Sampler::AlwaysOn));
-        
+
         match sampler_from_ratio(0.5) {
             Sampler::TraceIdRatioBased(r) => assert_eq!(r, 0.5),
             _ => panic!("expected TraceIdRatioBased sampler"),
@@ -100,7 +102,7 @@ mod tests {
         let mut config = TracerConfig::new("test-service");
         config.enabled = true;
         let resource = Resource::default();
-        
+
         let result = setup(&config, &resource);
         assert!(result.is_err());
     }
