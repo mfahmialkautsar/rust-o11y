@@ -6,7 +6,7 @@
 [![Crates.io](https://img.shields.io/crates/v/o11y.svg)](https://crates.io/crates/o11y)
 [![Docs.rs](https://img.shields.io/docsrs/o11y)](https://docs.rs/o11y)
 ![MSRV](https://img.shields.io/badge/rustc-2024%20edition-orange.svg)
-[![License](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/mfahmialkautsar/rust-o11y)](LICENSE)
 
 Observability building blocks for Rust services: unified configuration for logging, tracing, metrics, and continuous profiling on top of OpenTelemetry.
 
@@ -106,4 +106,4 @@ cargo test --test telemetry_standalone
 
 ## License
 
-This project is licensed under the [GNU GPLv3 only](LICENSE).
+This project is licensed under the [Apache-2.0](LICENSE).
