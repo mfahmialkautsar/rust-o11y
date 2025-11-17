@@ -2,18 +2,20 @@ name: Publish
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: 'Type "yes" to publish the crate to crates.io'
-        required: true
-        default: 'no'
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - name: Ensure required workflows succeeded
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const workflows = ['ci.yml', 'coverage.yml', 'docs.yml'];
@@ -40,11 +42,9 @@ jobs:
             }
 
   publish:
+    if: ${{ github.ref == 'refs/heads/main' }}
     needs: verify
-    if: ${{ inputs.confirm == 'yes' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
