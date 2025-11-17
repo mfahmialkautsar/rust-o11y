@@ -210,12 +210,11 @@ pub async fn wait_for_loki(
 
                     if let Some(values) = result["values"].as_array() {
                         for tuple in values {
-                            if let Some(line) = tuple.get(1).and_then(|v| v.as_str()) {
-                                if line.contains(&message)
-                                    || matches_loki_line(line, &message, &trace_id, &span_id)
-                                {
-                                    return Ok(true);
-                                }
+                            if let Some(line) = tuple.get(1).and_then(|v| v.as_str())
+                                && (line.contains(&message)
+                                    || matches_loki_line(line, &message, &trace_id, &span_id))
+                            {
+                                return Ok(true);
                             }
                         }
                     }
@@ -261,14 +260,12 @@ pub async fn wait_for_mimir(
                 if results.is_empty() {
                     return Ok(false);
                 }
-                if let Some(value) = results[0]["value"].as_array() {
-                    if value.len() == 2 {
-                        if let Some(sample) = value[1].as_str() {
-                            if sample != "0" {
-                                return Ok(true);
-                            }
-                        }
-                    }
+                if let Some(value) = results[0]["value"].as_array()
+                    && value.len() == 2
+                    && let Some(sample) = value[1].as_str()
+                    && sample != "0"
+                {
+                    return Ok(true);
                 }
             }
             Ok(false)
@@ -363,12 +360,11 @@ pub async fn wait_for_pyroscope(
                 return Ok(false);
             }
 
-            if let Some(metadata) = body.get("metadata") {
-                if let Some(app_name) = metadata.get("appName").and_then(|v| v.as_str()) {
-                    if !app_name.contains(service_name) {
-                        return Ok(false);
-                    }
-                }
+            if let Some(metadata) = body.get("metadata")
+                && let Some(app_name) = metadata.get("appName").and_then(|v| v.as_str())
+                && !app_name.contains(service_name)
+            {
+                return Ok(false);
             }
 
             Ok(true)

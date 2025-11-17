@@ -46,10 +46,10 @@ pub fn setup(config: &TracerConfig, resource: &Resource) -> Result<Option<Tracer
 pub fn init(config: &TracerConfig, resource: &Resource) -> Result<Option<TracerProvider>> {
     let provider = setup(config, resource)?;
 
-    if config.use_global {
-        if let Some(ref p) = provider {
-            global::set_tracer_provider(p.clone());
-        }
+    if config.use_global
+        && let Some(ref p) = provider
+    {
+        global::set_tracer_provider(p.clone());
     }
 
     Ok(provider)

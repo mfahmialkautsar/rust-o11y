@@ -50,10 +50,10 @@ pub fn setup(config: &MeterConfig, resource: &Resource) -> Result<Option<MeterPr
 pub fn init(config: &MeterConfig, resource: &Resource) -> Result<Option<MeterProvider>> {
     let provider = setup(config, resource)?;
 
-    if config.use_global {
-        if let Some(ref p) = provider {
-            global::set_meter_provider(p.clone());
-        }
+    if config.use_global
+        && let Some(ref p) = provider
+    {
+        global::set_meter_provider(p.clone());
     }
 
     Ok(provider)
